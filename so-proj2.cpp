@@ -38,7 +38,7 @@ void pokazStatus()
         if (i < 3)
         {
             string tekst = miecz[i] == 1 ? "wolny" : "zajety";
-            mvprintw(2, i * 5 + 3 + 15, "%s", miecz[i]);
+            mvprintw(2, i * 5 + 3 + 15, "%s", tekst);
         }
 
         mvprintw(i + 4, 0, "Rycerz %d walczyl %d razy", i, liczba_powtorzen[i]);
