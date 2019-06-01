@@ -34,11 +34,12 @@ void pokazStatus()
     for (int i = 0; i < liczba_watkow; i++)
     {
         mvprintw(1, i * 5 + 3 + 15, "%d", status_rycerza[i]);
+
         if (i < 3)
         {
-            mvprintw(2, i * 5 + 6 + 15, "%d", miecz[i]);
+            mvprintw(1, i * 5 + 3 + 15, "%d", miecz[i]);
         }
-        mvprintw(2, 16, "%d", miecz[liczba_watkow - 1]);
+
         mvprintw(i + 4, 0, "Rycerz %d walczyl %d razy", i, liczba_powtorzen[i]);
         mvprintw(i + 4, 35, "Walka %d/100", status_walki[i]);
         mvprintw(i + 4, 65, "Jedzenie %d/100", status_jedzenia[i]);
@@ -76,7 +77,7 @@ void wystartujWatek(int numer_watku)
         {
             if (status_rycerza[numer_watku] == 1)
             {
-                usleep(rand() % 300000 + 200000);
+                usleep(rand() % 300000 + 300000);
                 status_walki[numer_watku] += 10;
                 pokazStatus();
             }
