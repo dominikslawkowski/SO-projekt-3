@@ -9,7 +9,7 @@ using namespace std;
 mutex mtx;
 
 const int liczba_watkow = 5;
-bool miecz[liczba_watkow];
+bool miecz[3];
 int status_rycerza[liczba_watkow];
 int liczba_powtorzen[liczba_watkow];
 int status_walki[liczba_watkow];
@@ -34,15 +34,16 @@ void pokazStatus()
     for (int i = 0; i < liczba_watkow; i++)
     {
         mvprintw(1, i * 5 + 3 + 15, "%d", status_rycerza[i]);
-        mvprintw(2, i * 5 + 6 + 15, "%d", miecz[i]);
+        if (i < 3)
+        {
+            mvprintw(2, i * 5 + 6 + 15, "%d", miecz[i]);
+        }
         mvprintw(2, 16, "%d", miecz[liczba_watkow - 1]);
-        mvprintw(i + 4, 0, "Filozof %d zjadl %d razy", i, liczba_powtorzen[i]);
-        mvprintw(i + 4, 35, "Jedzenie %d/100", status_walki[i]);
-        mvprintw(i + 4, 65, "Myslenie %d/100", status_jedzenia[i]);
-        mvprintw(1, 0, "(filozofowie)");
-        mvprintw(2, 0, "(widelce)");
-        mvprintw(1, 50, "(1 -> filozof je | 0 -> filozof mysli)");
-        mvprintw(2, 50, "(1 -> wiedlec wolny | 0 -> widelec zajety)");
+        mvprintw(i + 4, 0, "Rycerz %d walczyl %d razy", i, liczba_powtorzen[i]);
+        mvprintw(i + 4, 35, "Walka %d/100", status_walki[i]);
+        mvprintw(i + 4, 65, "Jedzenie %d/100", status_jedzenia[i]);
+        mvprintw(1, 0, "(rycerze)");
+        mvprintw(2, 0, "(miecze)");
         refresh();
     }
     mtx.unlock();
