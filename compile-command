@@ -1,0 +1,1 @@
+g++ -std=c++11 so-proj2.cpp -lpthread -lncurses -o program2
