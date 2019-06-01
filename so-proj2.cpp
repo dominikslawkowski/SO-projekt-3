@@ -37,7 +37,7 @@ void pokazStatus()
 
         if (i < 3)
         {
-            mvprintw(1, i * 5 + 3 + 15, "%d", miecz[i]);
+            mvprintw(2, i * 5 + 3 + 15, "%d", miecz[i]);
         }
 
         mvprintw(i + 4, 0, "Rycerz %d walczyl %d razy", i, liczba_powtorzen[i]);
