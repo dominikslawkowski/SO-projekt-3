@@ -8,37 +8,37 @@
 using namespace std;
 mutex mtx;
 
-const int numThreads = 5;
-bool forkEnable[numThreads];
-int status[numThreads];
-int cycleCounter[numThreads];
-int eatStatus[numThreads];
-int thinkStatus[numThreads];
-bool endProgram = false;
+const int liczba_watkow = 5;
+bool miecz[liczba_watkow];
+int status_rycerza[liczba_watkow];
+int liczba_powtorzen[liczba_watkow];
+int status_walki[liczba_watkow];
+int status_jedzenia[liczba_watkow];
+bool koniec_programu = false;
 
-void pickUp(int tID)
+void wezMiecz(int numer_watku)
 {
-    forkEnable[tID] = false;
-    forkEnable[((2 * numThreads + tID - 1) % numThreads)] = false;
+    miecz[numer_watku] = false;
+    miecz[((2 * liczba_watkow + numer_watku - 1) % liczba_watkow)] = false;
 }
 
-void putDown(int tID)
+void odlozMiecz(int numer_watku)
 {
-    forkEnable[tID] = true;
-    forkEnable[((2 * numThreads + tID - 1) % numThreads)] = true;
+    miecz[numer_watku] = true;
+    miecz[((2 * liczba_watkow + numer_watku - 1) % liczba_watkow)] = true;
 }
 
-void showStatus()
+void pokazStatus()
 {
     mtx.lock();
-    for (int i = 0; i < numThreads; i++)
+    for (int i = 0; i < liczba_watkow; i++)
     {
-        mvprintw(1, i * 5 + 3 + 15, "%d", status[i]);
-        mvprintw(2, i * 5 + 6 + 15, "%d", forkEnable[i]);
-        mvprintw(2, 16, "%d", forkEnable[numThreads - 1]);
-        mvprintw(i + 4, 0, "Filozof %d zjadl %d razy", i, cycleCounter[i]);
-        mvprintw(i + 4, 35, "Jedzenie %d/100", eatStatus[i]);
-        mvprintw(i + 4, 65, "Myslenie %d/100", thinkStatus[i]);
+        mvprintw(1, i * 5 + 3 + 15, "%d", status_rycerza[i]);
+        mvprintw(2, i * 5 + 6 + 15, "%d", miecz[i]);
+        mvprintw(2, 16, "%d", miecz[liczba_watkow - 1]);
+        mvprintw(i + 4, 0, "Filozof %d zjadl %d razy", i, liczba_powtorzen[i]);
+        mvprintw(i + 4, 35, "Jedzenie %d/100", status_walki[i]);
+        mvprintw(i + 4, 65, "Myslenie %d/100", status_jedzenia[i]);
         mvprintw(1, 0, "(filozofowie)");
         mvprintw(2, 0, "(widelce)");
         mvprintw(1, 50, "(1 -> filozof je | 0 -> filozof mysli)");
@@ -48,85 +48,84 @@ void showStatus()
     mtx.unlock();
 }
 
-void startThread(int tID)
+void wystartujWatek(int numer_watku)
 {
-    while (!endProgram)
+    while (!koniec_programu)
     {
         if (getch() == 27)
         {
-            endProgram = true;
+            koniec_programu = true;
             break;
         }
         mtx.lock();
 
-        bool freeLeftFork = forkEnable[tID];
-        bool freeRightFork = forkEnable[(((2 * numThreads) + tID - 1) % numThreads)];
-        bool leftNeighborIsFull = cycleCounter[tID] <= cycleCounter[(2 * numThreads + tID - 1) % numThreads];
-        bool rightNeighborIsFull = cycleCounter[tID] <= cycleCounter[(2 * numThreads + tID + 1) % numThreads];
+        bool dostepny_miecz = miecz[numer_watku];
+        bool liczba_powtorzen_rycerza_poprzedniego = liczba_powtorzen[numer_watku] <= liczba_powtorzen[(2 * liczba_watkow + numer_watku - 1) % liczba_watkow];
+        bool liczba_powtorzen_rycerza_kolejnego = liczba_powtorzen[numer_watku] <= liczba_powtorzen[(2 * liczba_watkow + numer_watku + 1) % liczba_watkow];
 
-        if (freeLeftFork && freeRightFork && leftNeighborIsFull && rightNeighborIsFull)
+        if (dostepny_miecz && liczba_powtorzen_rycerza_poprzedniego && liczba_powtorzen_rycerza_kolejnego)
         {
-            pickUp(tID);
-            status[tID] = 1;
-            cycleCounter[tID]++;
+            wezMiecz(numer_watku);
+            status_rycerza[numer_watku] = 1;
+            liczba_powtorzen[numer_watku]++;
         }
         mtx.unlock();
-        eatStatus[tID] = 0;
+        status_walki[numer_watku] = 0;
         for (int i = 1; i <= 10; i++)
         {
-            if (status[tID] == 1)
+            if (status_rycerza[numer_watku] == 1)
             {
                 usleep(rand() % 300000 + 200000);
-                eatStatus[tID] += 10;
-                showStatus();
+                status_walki[numer_watku] += 10;
+                pokazStatus();
             }
             else
             {
                 break;
             }
         }
-        eatStatus[tID] = 0;
+        status_walki[numer_watku] = 0;
         clear();
-        showStatus();
+        pokazStatus();
 
         mtx.lock();
-        if (status[tID] == 1)
+        if (status_rycerza[numer_watku] == 1)
         {
-            putDown(tID);
-            status[tID] = 0;
+            odlozMiecz(numer_watku);
+            status_rycerza[numer_watku] = 0;
         }
         mtx.unlock();
 
-        thinkStatus[tID] = 0;
+        status_jedzenia[numer_watku] = 0;
         for (int i = 1; i <= 10; i++)
         {
             usleep(rand() % 300000 + 200000);
-            thinkStatus[tID] += 10;
-            showStatus();
+            status_jedzenia[numer_watku] += 10;
+            pokazStatus();
         }
-        thinkStatus[tID] = 0;
+        status_jedzenia[numer_watku] = 0;
         clear();
-        showStatus();
+        pokazStatus();
     }
 }
 int main()
 {
     srand(time(NULL));
-    for (int i = 0; i < numThreads; i++)
+    for (int i = 0; i < liczba_watkow; i++)
     {
-        forkEnable[i] = true;
-        status[i] = 0;
+        miecz[i] = true;
+        status_rycerza[i] = 0;
     }
-    int tab[numThreads];
-    thread t[numThreads];
+    int tab[liczba_watkow];
+    thread t[liczba_watkow];
     initscr();
     nodelay(stdscr, TRUE);
     refresh();
-    for (int i = 0; i < numThreads; i++)
+    for (int i = 0; i < liczba_watkow; i++)
     {
-        t[i] = thread(startThread, i);
+        t[i] = thread(wystartujWatek, i);
     }
-    for (int i = 0; i < numThreads; i++)
+    for (int i = 0; i < liczba_watkow; i++)
     {
         t[i].join();
     }
