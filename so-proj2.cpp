@@ -25,14 +25,16 @@ const int liczba_kufli = 3;
 // Zasoby
 int miecz[liczba_mieczy];
 int pancerz[liczba_pancerzy];
-int miski[liczba_misek];
-int kufle[liczba_kufli];
+int miska[liczba_misek];
+int kufel[liczba_kufli];
 
-int liczba_powtorzen[liczba_rycerzy];
+int liczba_powtorzen_walki[liczba_rycerzy];
+int liczba_powtorzen_jedzenia[liczba_rycerzy];
 
 char *status_rycerza[liczba_rycerzy];
 int status_walki[liczba_rycerzy];
 int status_jedzenia[liczba_rycerzy];
+int status_leczenia[liczba_rycerzy];
 int status_oczekiwania[liczba_rycerzy];
 
 int zycie_rycerza[liczba_rycerzy];
@@ -63,11 +65,31 @@ void odlozPancerz(int pancerza_id)
     pancerz[pancerza_id] = -1;
 }
 
+void wezKufel(int kufel_id, int rycerz_id)
+{
+    kufel[kufel_id] = rycerz_id;
+}
+
+void odlozKufel(int kufel_id)
+{
+    kufel[kufel_id] = -1;
+}
+
+void wezMiske(int miska_id, int rycerz_id)
+{
+    miska[miska_id] = rycerz_id;
+}
+
+void odlozMiske(int miska_id)
+{
+    miska[miska_id] = -1;
+}
+
 int zwrocPostepRycerza(string status, int id)
 {
     if (status == U_MEDYKA)
     {
-        return 0;
+        return status_leczenia[id];
     }
     else if (status == W_KUCHNI)
     {
@@ -149,6 +171,18 @@ void pokazStatusRycerza(int i)
         mvprintw(10 + przes, odstep, "- miecz %d", index_miecza);
     }
 
+    int index_kufla = distance(kufel, find(kufel, kufel + liczba_kufli, i));
+    if (index_kufla != liczba_kufli)
+    {
+        mvprintw(9 + przes, odstep, "- kufel %d", index_kufla);
+    }
+
+    int index_miski = distance(miska, find(miska, miska + liczba_misek, i));
+    if (index_miski != liczba_misek)
+    {
+        mvprintw(10 + przes, odstep, "- miska %d", index_miski);
+    }
+
     mvprintw(11 + przes, odstep, "status: %s", status_rycerza[i]);
 }
 
@@ -166,39 +200,6 @@ void pokazStatus()
         mvprintw(42, 0, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - POLE BITWY - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 
         pokazStatusRycerza(i);
-
-        // if (i < liczba_pancerzy)
-        // {
-        //     mvprintw(2, 150 + odstep, "%d", i);
-        // }
-
-        // mvprintw(3, 150, "pancerze");
-        // mvprintw(4, 150, "rycerz %d", pancerz[0]);
-        // mvprintw(4, 150 + 25, "rycerz %d", pancerz[1]);
-        // mvprintw(4, 150 + 50, "rycerz %d", pancerz[2]);
-
-        // mvprintw(6, 150, "miecze");
-        // mvprintw(7, 150, "rycerz %d", miecz[0]);
-        // mvprintw(7, 150 + 25, "rycerz %d", miecz[1]);
-        // mvprintw(7, 150 + 50, "rycerz %d", miecz[2]);
-
-        //-----------------
-
-        // mvprintw(1, 0, "(rycerze)");
-        // mvprintw(2, 0, "(miecze)");
-
-        // const char *tekst = status_rycerza[i] == 0 ? W_BAZIE : "walczy";
-        // mvprintw(1, i * 10 + 3 + 15, "%s", tekst);
-
-        // if (i < liczba_mieczy)
-        // {
-        //     const char *tekst = miecz[i] == 1 ? "wolny" : "zajety";
-        //     mvprintw(2, i * 10 + 3 + 15, "%s", tekst);
-        // }
-
-        // mvprintw(i + 4, 0, "Rycerz %d walczyl %d razy", i, liczba_powtorzen[i]);
-        // mvprintw(i + 4, 35, "Walka %d/100", status_walki[i]);
-        // mvprintw(i + 4, 65, "Jedzenie %d/100", status_jedzenia[i]);
         refresh();
     }
     mtx.unlock();
@@ -221,16 +222,16 @@ void wystartujWatekRycerza(int id)
         int index_miecza = distance(miecz, find(miecz, miecz + liczba_mieczy, -1));
         int index_pancerza = distance(pancerz, find(pancerz, pancerz + liczba_pancerzy, -1));
 
-        bool liczba_powtorzen_rycerza_poprzedniego = liczba_powtorzen[id] <= liczba_powtorzen[(2 * liczba_rycerzy + id - 1) % liczba_rycerzy];
-        bool liczba_powtorzen_rycerza_kolejnego = liczba_powtorzen[id] <= liczba_powtorzen[(2 * liczba_rycerzy + id + 1) % liczba_rycerzy];
+        bool liczba_powtorzen_rycerza_poprzedniego = liczba_powtorzen_walki[id] <= liczba_powtorzen_walki[(2 * liczba_rycerzy + id - 1) % liczba_rycerzy];
+        bool liczba_powtorzen_rycerza_kolejnego = liczba_powtorzen_walki[id] <= liczba_powtorzen_walki[(2 * liczba_rycerzy + id + 1) % liczba_rycerzy];
 
         // Rycerz udaje sie na pole bitwy
-        if (zycie_rycerza[id] > 3 && index_miecza < liczba_mieczy && index_pancerza < liczba_pancerzy && liczba_powtorzen_rycerza_poprzedniego && liczba_powtorzen_rycerza_kolejnego)
+        if (zycie_rycerza[id] > 3 && glod_rycerza[id] > 3 && index_miecza < liczba_mieczy && index_pancerza < liczba_pancerzy && liczba_powtorzen_rycerza_poprzedniego && liczba_powtorzen_rycerza_kolejnego)
         {
             wezMiecz(index_miecza, id);
             wezPancerz(index_pancerza, id);
             status_rycerza[id] = NA_POLU_BITWY;
-            liczba_powtorzen[id]++;
+            liczba_powtorzen_walki[id]++;
         }
         mtx.unlock();
 
@@ -252,6 +253,12 @@ void wystartujWatekRycerza(int id)
                 if (i % 3 == 0)
                 {
                     glod_rycerza[id] -= 1;
+                }
+
+                if (zycie_rycerza[id] == 0)
+                {
+                    break;
+                    status_walki[id] = 0;
                 }
 
                 clear();
@@ -276,17 +283,38 @@ void wystartujWatekRycerza(int id)
         }
 
         // Rycerz posila sie
-        if (glod_rycerza[id] < poczatkowy_glod_rycerza)
+        mtx.lock();
+        int index_kufla = distance(kufel, find(kufel, kufel + liczba_kufli, -1));
+        int index_miski = distance(miska, find(miska, miska + liczba_misek, -1));
+
+        bool liczba_powtorzen_jedzenia_rycerza_poprzedniego = liczba_powtorzen_jedzenia[id] <= liczba_powtorzen_jedzenia[(2 * liczba_rycerzy + id - 1) % liczba_rycerzy];
+        bool liczba_powtorzen_jedzenia_rycerza_kolejnego = liczba_powtorzen_jedzenia[id] <= liczba_powtorzen_jedzenia[(2 * liczba_rycerzy + id + 1) % liczba_rycerzy];
+
+        // Rycerz udaje sie na pole bitwy
+        if (glod_rycerza[id] < poczatkowy_glod_rycerza && index_kufla < liczba_kufli && index_miski < liczba_misek && liczba_powtorzen_jedzenia_rycerza_poprzedniego && liczba_powtorzen_jedzenia_rycerza_kolejnego)
         {
+            wezKufel(index_kufla, id);
+            wezMiske(index_miski, id);
             status_rycerza[id] = W_KUCHNI;
+            liczba_powtorzen_jedzenia[id]++;
+        }
+        mtx.unlock();
+
+        if (status_rycerza[id] == W_KUCHNI)
+        {
             status_jedzenia[id] = 0;
             for (int i = 1; i <= 10; i++)
             {
                 usleep(wylosujLiczbe());
                 status_jedzenia[id] += 10;
-                if (glod_rycerza[id] < poczatkowy_glod_rycerza && rand() % 10 > 7)
+                if (glod_rycerza[id] < poczatkowy_glod_rycerza && i % 2 == 0)
                 {
                     glod_rycerza[id] += 1;
+                }
+                if (glod_rycerza[id] == poczatkowy_glod_rycerza)
+                {
+                    break;
+                    status_jedzenia[id] = 0;
                 }
                 clear();
                 pokazStatus();
@@ -294,6 +322,39 @@ void wystartujWatekRycerza(int id)
             status_jedzenia[id] = 0;
             clear();
             pokazStatus();
+
+            mtx.lock();
+            odlozKufel(index_kufla);
+            odlozMiske(index_miski);
+            mtx.unlock();
+            status_rycerza[id] = W_BAZIE;
+        }
+        else if (zycie_rycerza[id] < poczatkowe_zycie_rycerza)
+        {
+            // Lub rycerz udaje sie do medyka
+            status_rycerza[id] = U_MEDYKA;
+            status_leczenia[id] = 0;
+            for (int i = 1; i <= 10; i++)
+            {
+                usleep(wylosujLiczbe());
+                status_leczenia[id] += 10;
+                if (zycie_rycerza[id] < poczatkowe_zycie_rycerza && i % 2 == 0)
+                {
+                    zycie_rycerza[id] += 1;
+                }
+
+                if (zycie_rycerza[id] == poczatkowe_zycie_rycerza)
+                {
+                    break;
+                    status_leczenia[id] = 0;
+                }
+                clear();
+                pokazStatus();
+            }
+            status_leczenia[id] = 0;
+            clear();
+            pokazStatus();
+            status_rycerza[id] = W_BAZIE;
         }
         else
         {
@@ -329,6 +390,16 @@ int main()
     for (int i = 0; i < liczba_pancerzy; i++)
     {
         pancerz[i] = -1;
+    }
+
+    for (int i = 0; i < liczba_misek; i++)
+    {
+        miska[i] = -1;
+    }
+
+    for (int i = 0; i < liczba_kufli; i++)
+    {
+        kufel[i] = -1;
     }
 
     int tab[liczba_rycerzy];
