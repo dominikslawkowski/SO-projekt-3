@@ -67,6 +67,11 @@ int wylosujLiczbe()
     return rand() % 1000000 + 300000;
 }
 
+int wylosujZuzycie()
+{
+    return wylosujLiczbe() % 10 == 0 ? 0 : 1;
+}
+
 void wezMiecz(int miecz_id, int rycerz_id)
 {
     miecz[miecz_id][0] = rycerz_id;
@@ -75,7 +80,7 @@ void wezMiecz(int miecz_id, int rycerz_id)
 void odlozMiecz(int miecz_id)
 {
     miecz[miecz_id][0] = -1;
-    miecz[miecz_id][1] = 0;
+    miecz[miecz_id][1] = wylosujZuzycie();
 }
 
 void wezPancerz(int pancerza_id, int rycerz_id)
@@ -86,7 +91,7 @@ void wezPancerz(int pancerza_id, int rycerz_id)
 void odlozPancerz(int pancerza_id)
 {
     pancerz[pancerza_id][0] = -1;
-    pancerz[pancerza_id][1] = 0;
+    pancerz[pancerza_id][1] = wylosujZuzycie();
 }
 
 void wezKufel(int kufel_id, int rycerz_id)
@@ -97,7 +102,8 @@ void wezKufel(int kufel_id, int rycerz_id)
 void odlozKufel(int kufel_id)
 {
     kufel[kufel_id][0] = -1;
-    kufel[kufel_id][1] = 0;
+    kufel[kufel_id][1] = wylosujZuzycie();
+    ;
 }
 
 void wezMiske(int miska_id, int rycerz_id)
@@ -108,7 +114,8 @@ void wezMiske(int miska_id, int rycerz_id)
 void odlozMiske(int miska_id)
 {
     miska[miska_id][0] = -1;
-    miska[miska_id][1] = 0;
+    miska[miska_id][1] = wylosujZuzycie();
+    ;
 }
 
 int znajdzGotowyMiecz(int tab[liczba_mieczy][2], int ilosc, int id)
@@ -336,28 +343,24 @@ void pokazStatusRycerza(int i)
     mvprintw(7 + przes, odstep, "postep: %d/100", zwrocPostepRycerza(status_rycerza[i], i));
 
     mvprintw(8 + przes, odstep, "uzywa: ");
-    // int index_pancerza = distance(pancerz, find(pancerz, pancerz + liczba_pancerzy, i));
     int index_pancerza = znajdzGotowyPancerz(pancerz, sizeof(pancerz) / sizeof(pancerz[0]), i);
     if (index_pancerza != liczba_pancerzy)
     {
         mvprintw(9 + przes, odstep, "- pancerz %d", index_pancerza);
     }
 
-    // int index_miecza = distance(miecz, find(miecz, miecz + liczba_mieczy, i));
     int index_miecza = znajdzGotowyMiecz(miecz, sizeof(miecz) / sizeof(miecz[0]), i);
     if (index_miecza != liczba_mieczy)
     {
         mvprintw(10 + przes, odstep, "- miecz %d", index_miecza);
     }
 
-    // int index_kufla = distance(kufel, find(kufel, kufel + liczba_kufli, i));
     int index_kufla = znajdzGotowaMiske(kufel, sizeof(kufel) / sizeof(kufel[0]), i);
     if (index_kufla != liczba_kufli)
     {
         mvprintw(9 + przes, odstep, "- kufel %d", index_kufla);
     }
 
-    // int index_miski = distance(miska, find(miska, miska + liczba_misek, i));
     int index_miski = znajdzGotowaMiske(miska, sizeof(miska) / sizeof(miska[0]), i);
     if (index_miski != liczba_misek)
     {
@@ -387,7 +390,7 @@ void pokazStatusRzemieslnika()
 
 void pokazStatusKucharza()
 {
-    mvprintw(14, 128, "- - - - - - - - - - - - - KUCHARZ - - - - - - - - - - - - - -");
+    mvprintw(14, 128, "- - - - - - - - - - - - - KUCHARZ - - - - - - - - - - - - - - - -");
     mvprintw(15, 130, "Kucharz");
     mvprintw(16, 130, "----------------");
     mvprintw(17, 130, "status: %s", status_kucharza);
@@ -442,25 +445,61 @@ void pokazStatus()
         mvprintw(43, 140, "   miecz  |");
         for (int i = 0; i < liczba_mieczy; i++)
         {
-            mvprintw(43, 151 + i * 9, "  %s  ", miecz[i][1] == 1 ? "gotowy" : "zepsuty");
+            if (miecz[i][1] == 1)
+            {
+                mvprintw(43, 151 + i * 9, "  %s  ", "gotowy");
+            }
+            else
+            {
+                attron(COLOR_PAIR(1));
+                mvprintw(43, 151 + i * 9, "  %s  ", "zepsuty");
+                attroff(COLOR_PAIR(1));
+            }
         }
         mvprintw(44, 140, "          |");
         mvprintw(45, 140, "  pancerz |");
         for (int i = 0; i < liczba_pancerzy; i++)
         {
-            mvprintw(45, 151 + i * 9, "  %s  ", pancerz[i][1] == 1 ? "gotowy" : "zepsuty");
+            if (pancerz[i][1] == 1)
+            {
+                mvprintw(45, 151 + i * 9, "  %s  ", "gotowy");
+            }
+            else
+            {
+                attron(COLOR_PAIR(1));
+                mvprintw(45, 151 + i * 9, "  %s  ", "zepsuty");
+                attroff(COLOR_PAIR(1));
+            }
         }
         mvprintw(46, 140, "          |");
         mvprintw(47, 140, "   kufel  |");
         for (int i = 0; i < liczba_kufli; i++)
         {
-            mvprintw(47, 151 + i * 9, "  %s  ", kufel[i][1] == 1 ? "pelny" : "pusty");
+            if (kufel[i][1] == 1)
+            {
+                mvprintw(47, 151 + i * 9, "  %s  ", "pelny");
+            }
+            else
+            {
+                attron(COLOR_PAIR(1));
+                mvprintw(47, 151 + i * 9, "  %s  ", "pusty");
+                attroff(COLOR_PAIR(1));
+            }
         }
         mvprintw(48, 140, "          |");
         mvprintw(49, 140, "   miska  |");
         for (int i = 0; i < liczba_misek; i++)
         {
-            mvprintw(49, 151 + i * 9, "  %s  ", miska[i][1] == 1 ? "pelna" : "pusta");
+            if (miska[i][1] == 1)
+            {
+                mvprintw(49, 151 + i * 9, "  %s  ", "pelny");
+            }
+            else
+            {
+                attron(COLOR_PAIR(1));
+                mvprintw(49, 151 + i * 9, "  %s  ", "pusty");
+                attroff(COLOR_PAIR(1));
+            }
         }
         refresh();
     }
@@ -479,10 +518,7 @@ void wystartujWatekRycerza(int id)
             koniec_programu = true;
             break;
         }
-
         mtx.lock();
-        // int index_miecza = distance(miecz, find(miecz, miecz + liczba_mieczy, -1));
-        // int index_pancerza = distance(pancerz, find(pancerz, pancerz + liczba_pancerzy, -1));
         int index_miecza = znajdzGotowyMiecz(miecz, sizeof(miecz) / sizeof(miecz[0]), -1);
         int index_pancerza = znajdzGotowyPancerz(pancerz, sizeof(pancerz) / sizeof(pancerz[0]), -1);
 
@@ -516,7 +552,7 @@ void wystartujWatekRycerza(int id)
                 // Utrata glodu przez rycerza (stale)
                 if (i % 3 == 0)
                 {
-                    glod_rycerza[id] -= 1;
+                    glod_rycerza[id] -= wylosujLiczbe() % 4 == 0 ? 1 : 0;
                 }
 
                 if (zycie_rycerza[id] <= 1 || glod_rycerza[id] <= 1)
@@ -548,9 +584,7 @@ void wystartujWatekRycerza(int id)
 
         // Rycerz posila sie
         mtx.lock();
-        // int index_kufla = distance(kufel, find(kufel, kufel + liczba_kufli, -1));
         int index_kufla = znajdzGotowyKufel(kufel, sizeof(kufel) / sizeof(kufel[0]), -1);
-        // int index_miski = distance(miska, find(miska, miska + liczba_misek, -1));
         int index_miski = znajdzGotowaMiske(miska, sizeof(miska) / sizeof(miska[0]), -1);
 
         bool liczba_powtorzen_jedzenia_rycerza_poprzedniego = liczba_powtorzen_jedzenia[id] <= liczba_powtorzen_jedzenia[(2 * liczba_rycerzy + id - 1) % liczba_rycerzy];
@@ -645,6 +679,11 @@ void wystartujWatekRzemieslnika(int id)
 {
     while (!koniec_programu)
     {
+        if (getch() == 27)
+        {
+            koniec_programu = true;
+            break;
+        }
         status_rzemieslnika = OBIJA_SIE;
         mtx.lock();
         int index_miecza = znajdzZepsutyPrzedmiot(miecz, sizeof(miecz) / sizeof(miecz[0]));
@@ -668,7 +707,7 @@ void wystartujWatekRzemieslnika(int id)
         {
             if (status_rzemieslnika == NAPRAWIA_MIECZ)
             {
-                usleep(wylosujLiczbe());
+                usleep(wylosujLiczbe() / 2);
                 status_naprawiania += 10;
 
                 clear();
@@ -676,7 +715,7 @@ void wystartujWatekRzemieslnika(int id)
             }
             else if (status_rzemieslnika == NAPRAWIA_PANCERZ)
             {
-                usleep(wylosujLiczbe());
+                usleep(wylosujLiczbe() / 2);
                 status_naprawiania += 10;
 
                 clear();
@@ -724,6 +763,11 @@ void wystartujWatekKucharza(int id)
 {
     while (!koniec_programu)
     {
+        if (getch() == 27)
+        {
+            koniec_programu = true;
+            break;
+        }
         status_kucharza = SPI;
         mtx.lock();
         int index_kufla = znajdzZepsutyPrzedmiot(kufel, sizeof(kufel) / sizeof(kufel[0]));
@@ -743,7 +787,7 @@ void wystartujWatekKucharza(int id)
         {
             if (status_kucharza == GOTUJE)
             {
-                usleep(wylosujLiczbe());
+                usleep(wylosujLiczbe() / 2);
                 status_gotowania += 10;
 
                 clear();
@@ -781,6 +825,19 @@ void wystartujWatekKucharza(int id)
     }
 }
 
+// void watekZakonczenia(int id)
+// {
+//     while (!koniec_programu)
+//     {
+//         if (getch() == 27)
+//         {
+//             koniec_programu = true;
+//             break;
+//         }
+//         usleep(2000);
+//     }
+// }
+
 int main()
 {
     srand(time(NULL));
@@ -817,6 +874,8 @@ int main()
     thread watek_rycerza[liczba_rycerzy];
     thread watek_rzemieslnika;
     thread watek_kucharza;
+    thread watek_zakonczenia;
+
     initscr();
     use_default_colors();
     start_color();
@@ -835,6 +894,8 @@ int main()
 
     watek_kucharza = thread(wystartujWatekKucharza, liczba_rycerzy + 2);
 
+    // watek_zakonczenia = thread(watekZakonczenia, 999);
+
     for (int i = 0; i < liczba_rycerzy; i++)
     {
         watek_rycerza[i].join();
@@ -842,6 +903,7 @@ int main()
 
     watek_rzemieslnika.join();
     watek_kucharza.join();
+    // watek_zakonczenia.join();
 
     endwin();
     return 0;
